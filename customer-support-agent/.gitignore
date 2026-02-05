@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Virtual env
+.venv/
+venv/
+
+# Env
+.env
+
+# Logs and runtime data
+data/logs/
+
+# Vector store
+data/vector_db/
+
+# OS files
+.DS_Store
