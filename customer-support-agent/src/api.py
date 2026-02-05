@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from .rag import build_or_load_vectorstore
 from .utils import new_session_id
 from .orchestrator import handle_message
+from .actions import find_ticket
 from . import config
 import os
 
@@ -30,3 +31,11 @@ def chat(req: ChatRequest):
     session_id = req.session_id or new_session_id()
     result = handle_message(session_id, req.message)
     return result
+
+
+@app.get("/ticket/{ticket_id}")
+def get_ticket(ticket_id: str):
+    ticket = find_ticket(ticket_id)
+    if not ticket:
+        return {"found": False, "ticket": None}
+    return {"found": True, "ticket": ticket}

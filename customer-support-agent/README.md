@@ -19,6 +19,20 @@ cp .env.example .env
 uvicorn src.api:app --reload --host 0.0.0.0 --port 8000
 ```
 
+## Streamlit UI (optional)
+
+Run the API first, then start the UI in a second terminal:
+
+```bash
+streamlit run streamlit_app.py
+```
+
+If your API is not at `http://localhost:8000`, set:
+
+```bash
+export API_URL=http://localhost:8000
+```
+
 ## Example usage
 
 ```bash

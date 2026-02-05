@@ -6,7 +6,7 @@ from .logger import log_chat
 from .memory import get_history, append_turn, trim_history
 from .rag import retrieve
 from .prompts import format_prompt
-from .actions import create_ticket
+from .actions import create_ticket, find_ticket
 
 
 def _ticket_intent(message: str) -> bool:
@@ -20,6 +20,13 @@ def _ticket_intent(message: str) -> bool:
 
 def _user_confirmed(message: str) -> bool:
     return bool(re.search(r"\byes\b", message.lower()))
+
+
+def _extract_ticket_id(message: str) -> Optional[str]:
+    match = re.search(r"\b[a-f0-9]{8}\b", message.lower())
+    if match:
+        return match.group(0)
+    return None
 
 
 def _call_llm(prompt: str, context_chunks):
@@ -62,6 +69,41 @@ def _call_llm(prompt: str, context_chunks):
 
 def handle_message(session_id: str, message: str) -> dict:
     history = get_history(session_id)
+    ticket_id_from_msg = _extract_ticket_id(message)
+    if ticket_id_from_msg:
+        ticket = find_ticket(ticket_id_from_msg)
+        if ticket:
+            response = (
+                f"Ticket {ticket_id_from_msg} was created at {ticket.get('timestamp', '-')}. "
+                f"Original message: {ticket.get('message', '-')}"
+            )
+        else:
+            response = (
+                f"I couldn't find ticket {ticket_id_from_msg}. "
+                "Please double-check the ticket number or create a new support ticket."
+            )
+
+        append_turn(session_id, "user", message)
+        append_turn(session_id, "assistant", response)
+        trim_history(session_id, max_turns=6)
+
+        log_chat({
+            "timestamp": now_timestamp(),
+            "session_id": session_id,
+            "route": "ticket_lookup",
+            "user_message": message,
+            "response": response,
+            "sources": [],
+        })
+
+        return {
+            "session_id": session_id,
+            "response": response,
+            "route": "ticket_lookup",
+            "sources": [],
+            "ticket_id": ticket_id_from_msg if ticket else None,
+        }
+
     context_chunks = retrieve(message, config.TOP_K)
     has_context = len(context_chunks) > 0
     ticket_intent = _ticket_intent(message)

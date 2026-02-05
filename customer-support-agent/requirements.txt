@@ -10,4 +10,5 @@ pydantic
 requests
 openai
 groq
+streamlit
 langchain-huggingface
