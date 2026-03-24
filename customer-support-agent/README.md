@@ -1,7 +1,5 @@
 # AI-Powered Customer Support Platform
 
-A simple, internship-ready customer support agent that answers questions using RAG over local documents, keeps short session memory, and can create support tickets.
-
 ## How to run
 
 1. Create a virtual environment and install deps.
